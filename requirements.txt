@@ -1,0 +1,10 @@
+streamlit
+streamlit-authenticator
+pydantic-ai
+pymongo
+openai
+pydantic
+python-dotenv
+PyYAML
+bcrypt
+jinja2

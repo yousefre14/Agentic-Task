@@ -1,0 +1,25 @@
+# import streamlit_authenticator as stauth
+# stauth.Hasher(['password']).generate()
+
+credentials:
+  usernames:
+    visitor_demo:
+      email: visitor@kayfa.io
+      name: Demo Visitor
+      password: \$2b$12$L8s4VwHNqRZs6xXYp7q7xOzL/VzZnM8H7MpK2qQ8xY9zT3wZ7xL8u  # "visitor123"
+      role: visitor
+    
+    sales_rep:
+      email: sales@kayfa.io
+      name: Sales Team
+      password: \$2b$12$j7K9mL2pQ1xR5wS8tU3vX6yZ9aB0cD3eF4gH5iJ6kL7mN8oP9qR0s  # "sales123"
+      role: sales_rep
+
+cookie:
+  expiry_days: 30
+  key: kayfa_secret_key_2024
+  name: kayfa_auth_cookie
+
+preauthorized:
+  emails:
+    - approved@kayfa.io
