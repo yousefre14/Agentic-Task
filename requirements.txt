@@ -8,3 +8,5 @@ python-dotenv
 PyYAML
 bcrypt
 jinja2
+sentence-transformers
+torchvision

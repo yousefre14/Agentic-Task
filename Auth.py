@@ -1,60 +1,89 @@
 """
-Centralizing auth logic keeps it DRY and reusable across pages.
-     We handle password hashing, session validation, and role-based access here.
+Auth.py — Clean, premium login experience with fixed hierarchy.
 """
-
 import streamlit as st
-import streamlit_authenticator as stauth
-import yaml
-from yaml.loader import SafeLoader
-import os
+from styles import inject_theme, logo1_b64, logo2_b64
 
-def load_authenticator():
-    """Load authenticator once per session."""
-    with open('config.yaml') as f:
-        config = yaml.load(f, Loader=SafeLoader)
-    
-    return stauth.Authenticate(
-        config['credentials'],
-        config['cookie']['name'],
-        config['cookie']['key'],
-        config['cookie']['expiry_days']
+CREDENTIALS = {
+    "visitor_demo": {"password":"admin","name":"Demo Visitor","role":"visitor"},
+    "sales_rep":    {"password":"admin","name":"Sales Team",  "role":"sales_rep"},
+    "admin":        {"password":"admin","name":"Admin",       "role":"admin"},
+}
+
+def render_login_page():
+    if st.session_state.get("authentication_status"):
+        return True, st.session_state.get("name"), st.session_state.get("username")
+
+    inject_theme()
+
+    logo_src  = logo1_b64 or logo2_b64
+    logo_html = (
+        f'<img src="{logo_src}" style="height:48px; object-fit:contain; '
+        f'background:transparent; display:block; margin:0 auto 1rem;" alt="Kayfa">'
+        if logo_src else
+        '<div style="font-size:2.2rem; font-weight:800; color:#F5A623; margin-bottom:1rem; text-align:center;">كيف</div>'
     )
 
-def check_authentication():
-    """
-    Check if user is logged in.
+    # Centered column layout for a premium web app feel
+    _, col, _ = st.columns([1, 1.8, 1])
+    with col:
+        # Unified Header Block
+        st.markdown(f"""
+        <div style="text-align:center; margin:4rem 0 2rem 0;">
+            {logo_html}
+            <div style="font-size:1.6rem; font-weight:700; color:#F1F5F9; letter-spacing:-0.025em;">Kayfa AI Portal</div>
+            <div style="font-size:0.875rem; color:#64748B; margin-top:0.35rem; font-weight:400;">
+                Agentic AI Sales Assistant &middot; Week 3
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Login Card Container
+        with st.container():
+            with st.form("login_form"):
+                username_input = st.text_input("Username", placeholder="e.g. visitor_demo").strip()
+                password_input = st.text_input("Password", type="password", placeholder="••••••").strip()
+                
+                st.markdown('<div style="margin-top: 1rem;"></div>', unsafe_allow_html=True)
+                submit = st.form_submit_button(
+                    "Sign in →", use_container_width=True, type="primary"
+                )
+
+            if submit:
+                if not username_input:
+                    st.error("⚠️ Username is required.")
+                elif not password_input:
+                    st.error("⚠️ Password is required.")
+                elif username_input in CREDENTIALS and CREDENTIALS[username_input]["password"] == password_input:
+                    info = CREDENTIALS[username_input]
+                    st.session_state["authentication_status"] = True
+                    st.session_state["username"] = username_input
+                    st.session_state["name"]     = info["name"]
+                    st.session_state["role"]     = info["role"]
+                    st.rerun()
+                else:
+                    st.error("❌ Incorrect username or password.")
+                    st.session_state["authentication_status"] = False
+
+        # Cleaned up demo credentials layout to avoid standard overlapping expanders
+        st.markdown('<div style="margin-top: 1.5rem;"></div>', unsafe_allow_html=True)
     
-    HOW: 
-    1. Load authenticator from cache
-    2. Check session_state for auth status
-    3. Return True/False + user info
-    
-    WHY: Prevents code duplication. One function for all auth checks.
-    """
-    authenticator = load_authenticator()
-    
-    # If not yet authenticated, show login
-    if st.session_state.get('authentication_status') is None:
-         authenticator.login(location="main")
-    
+
     return (
-        st.session_state.get('authentication_status'),
-        st.session_state.get('name'),
-        st.session_state.get('username')
+        st.session_state.get("authentication_status"),
+        st.session_state.get("name"),
+        st.session_state.get("username"),
     )
-
-def logout_user(authenticator):
-    """Handle logout with cleanup."""
-    authenticator.logout('Logout', 'sidebar', key='logout_unique')
-    st.rerun()
 
 def get_user_role():
-    """Return the logged-in user's role (visitor or sales_rep)."""
-    with open('config.yaml') as f:
-        config = yaml.load(f, Loader=SafeLoader)
-    
-    username = st.session_state.get('username')
-    if username and username in config['credentials']['usernames']:
-        return config['credentials']['usernames'][username].get('role', 'visitor')
-    return 'visitor'
+    return st.session_state.get("role", "visitor")
+
+def get_authenticator():
+    class _Logout:
+        def logout(self, label="Logout", location="main", key=None):
+            # Default to main page button to avoid crowding sidebars
+            btn = st.sidebar.button(label, key=key) if location == "sidebar" else st.button(label, key=key)
+            if btn:
+                st.session_state.clear()
+                st.rerun()
+    return _Logout()

@@ -29,6 +29,7 @@ import re
 import json
 from datetime import datetime, timezone
 from pymongo import MongoClient
+from semantic_search import calculate_embedding
 
 # ── MongoDB ───────────────────────────────────────────────────────────────────
 MONGODB_URI = "mongodb+srv://yousefmegawer_db_user:AO3VqLNqJCNzaWOs@cluster0.nfjjcbd.mongodb.net/?appName=Cluster0"
@@ -117,10 +118,6 @@ def chunk_markdown(text: str, source_file: str) -> list[dict]:
 # ════════════════════════════════════════════════════════════════════════════
 
 def upload_md(filepath: str) -> tuple[int, int, str | None]:
-    """
-    Read, chunk, and insert one .md file.
-    Returns (chunks_inserted, char_count, error)
-    """
     filename = os.path.basename(filepath)
     try:
         with open(filepath, "r", encoding="utf-8") as f:
@@ -134,7 +131,12 @@ def upload_md(filepath: str) -> tuple[int, int, str | None]:
         if not docs:
             return 0, 0, "No chunks produced"
 
-        # delete previous version then insert fresh
+        # 🚀 ADD THIS: Pre-calculate vector embeddings for every chunk!
+        print(f"  🧠 Generating semantic vectors for {filename}...")
+        for doc in docs:
+            doc["embedding"] = calculate_embedding(doc["content"])
+
+        # Delete previous version then insert fresh
         col.delete_many({"source_file": filename})
         result = col.insert_many(docs, ordered=False)
         return len(result.inserted_ids), len(text), None
@@ -170,10 +172,22 @@ def upload_json(filepath: str) -> tuple[int, str | None]:
             d["file_type"]      = "json"
             d["collection_key"] = slug
             d["imported_at"]    = now
+            
+            # Construct meaningful string representation to embed
+            content_representation = str(item)
+            if "content" in item:
+                content_representation = item["content"]
+            elif "text" in item:
+                content_representation = item["text"]
+                
+            d["content"] = content_representation
+            d["embedding"] = calculate_embedding(content_representation)
+            
             docs.append(d)
 
         col.delete_many({"source_file": filename})
         result = col.insert_many(docs, ordered=False)
+        
         return len(result.inserted_ids), None
 
     except json.JSONDecodeError as e:
