@@ -16,19 +16,6 @@ from styles import inject_theme, render_topbar, gold_divider, logo1_b64, logo2_b
 # ── theme ─────────────────────────────────────────────────────────────────────
 inject_theme()
 
-# ── target-isolated sidebar removal override ───────────────────────────────
-st.markdown("""
-<style>
-    /* target the sidebar element ONLY when the app layout is on the root path */
-    div[data-testid="stAppViewRootContainer"] [data-testid="stSidebarNav"] { 
-        display: none !important; 
-    }
-    div[data-testid="stAppViewRootContainer"] section[data-testid="stSidebar"] { 
-        display: none !important; 
-    }
-</style>
-""", unsafe_allow_html=True)
-
 # ── auth ──────────────────────────────────────────────────────────────────────
 auth_status, name, username = render_login_page()
 if not auth_status:
