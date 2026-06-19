@@ -3,15 +3,19 @@ from datetime import datetime, timezone
 from typing import Optional
  
 # ── Groq pricing, USD per token (verified June 2026) ─────────────────────────
+# Add your model pricing rules to your usage tracker file:
 PRICING = {
     "llama-3.3-70b-versatile": {
-        "input": 0.59 / 1_000_000,   # $0.59 per 1M input tokens
-        "output": 0.79 / 1_000_000,  # $0.79 per 1M output tokens
+        "input": 0.59 / 1_000_000,
+        "output": 0.79 / 1_000_000,
+    },
+    "openai/gpt-oss-120b": {
+        "input": 0.59 / 1_000_000,   # Set your specific model rate matrix here
+        "output": 0.79 / 1_000_000,  # Set your specific model rate matrix here
     },
 }
- 
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
- 
+
+DEFAULT_MODEL = "openai/gpt-oss-120b"
  
 @dataclass
 class UsageRecord:

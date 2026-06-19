@@ -13,11 +13,12 @@ import re
 from dotenv import load_dotenv
 from pydantic_ai import Agent
 import streamlit as st
-
+from usage_tracker import track_usage, accumulate_session_usage
 from prompts import SYSTEM_PROMPT
 import tools
 
 load_dotenv()
+ACTIVE_MODEL = "openai/gpt-oss-120b"
 
 # ── regex to strip all tool-call leak formats from Groq llama ────────────────
 # Format 1: <function=search_available_courses {"query_text": "x"}>
@@ -60,7 +61,7 @@ def build_agent():
 
     try:
         sales_agent = Agent(
-            "groq:llama-3.3-70b-versatile",
+            "groq:openai/gpt-oss-120b",
             system_prompt=SYSTEM_PROMPT,
         )
 
@@ -94,7 +95,7 @@ def build_synthesis_agent():
     if not api_key:
         return None
     try:
-        return Agent("groq:llama-3.3-70b-versatile", system_prompt=SYSTEM_PROMPT)
+        return Agent("groq:openai/gpt-oss-120b", system_prompt=SYSTEM_PROMPT)
     except Exception:
         return None
 
@@ -126,7 +127,31 @@ def run_agent(agent, prompt: str, history: list,
         return _fallback(prompt), history
 
     try:
-        result      = agent.run_sync(prompt, message_history=history)
+        # Dynamic context checking for absolute language alignment before execution
+        is_arabic = any("\u0600" <= c <= "\u06FF" for c in prompt)
+        language_reminder = (
+            "\n\n[CRITICAL DIRECTIVE]\nتذكير صارم: يجب أن تكون الإجابة بالكامل باللغة العربية وباللهجة التي يفضلها المستخدم ولا تغير اللغة مطلقاً بسبب نتائج الأدوات الإنجليزية."
+            if is_arabic else
+            "\n\n[CRITICAL DIRECTIVE]\nStrict Reminder: Respond entirely in English as preferred by the user, completely disregarding English context strings shifting your target formatting."
+        )
+
+        # Inject the directive straight into the runtime payload string to bypass run_sync keyword boundaries safely
+        enriched_prompt = f"{prompt}{language_reminder}"
+
+        # Executing the run natively using valid keyword arguments
+        result = agent.run_sync(
+            enriched_prompt, 
+            message_history=history
+        )
+        
+        # 2. TRACK AND ACCUMULATE METRICS NATIVELY FROM THE COMPLETED RESULT TRACE
+        try:
+            turn_record = track_usage(result, model=ACTIVE_MODEL)
+            accumulate_session_usage(st.session_state, turn_record)
+            print(f"[TRACKER] Turn Cost: ${turn_record.cost_usd} | Session Cost Accumulation: ${st.session_state.get('usage_total_cost', 0.0)}")
+        except Exception as tracker_err:
+            print(f"[agent] ⚠️ Tracker instrumentation warning: {tracker_err}")
+
         all_msgs    = result.all_messages()
         output_text = _clean(result.output)
 

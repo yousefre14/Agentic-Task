@@ -21,6 +21,36 @@ auth_status, name, username = render_login_page()
 if not auth_status:
     st.stop()
 
+# ── SIDEBAR: COST MONITORING DASHBOARD ────────────────────────────────────────
+with st.sidebar:
+    st.header("📊 Cost & Usage Monitor")
+    st.markdown("Real-time metrics accumulated via `usage_tracker.py`")
+    st.write("---")
+    
+    # Safely fetch accumulated metrics from st.session_state with default values
+    total_tokens = st.session_state.get("usage_total_tokens", 0)
+    total_cost = st.session_state.get("usage_total_cost", 0.0)
+    turns_count = st.session_state.get("usage_turn_count", 0)
+    
+    # Display neat metric card rows
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric(label="Total Cost (USD)", value=f"${total_cost:.5f}")
+    with col2:
+        st.metric(label="Total Turns", value=turns_count)
+        
+    st.metric(label="Total Tokens Consumed", value=f"{total_tokens:,}")
+    
+    st.write("---")
+    if st.button("Reset Session & Metrics"):
+        st.session_state.history = []
+        st.session_state.messages = []
+        if "usage_total_tokens" in st.session_state:
+            del st.session_state["usage_total_tokens"]
+            del st.session_state["usage_total_cost"]
+            del st.session_state["usage_turn_count"]
+        st.rerun()
+
 # ── header ────────────────────────────────────────────────────────────────────
 role = get_user_role()
 render_topbar(

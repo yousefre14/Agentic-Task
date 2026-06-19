@@ -36,8 +36,11 @@ def search_available_courses(ctx: RunContext, query_text: str,
         track=track or None,
         level=level or None,
     )
-    return result if result else "No courses matched this search."
-
+    if not result:
+        return "No courses matched this search."
+        
+    # Append a structural instruction reminder right to the data payload
+    return f"{result}\n\n[SYSTEM REMINDER: You must translate/respond to these details completely in the language/dialect the user used.]"
 
 # ════════════════════════════════════════════════════════════════════════════
 # TOOL 2 — Diploma / roadmap details
