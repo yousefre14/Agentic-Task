@@ -59,7 +59,7 @@ render_topbar(
 gold_divider()
 
 # ── welcome state (empty conversation) ────────────────────────────────────────
-if not st.session_state.messages:
+if "messages" not in st.session_state:
     st.markdown("""
     <div style="text-align:center; padding:3.5rem 1rem; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius:16px; margin-bottom: 1.5rem;">
         <div style="font-size:3rem; margin-bottom:1rem;">🎓</div>
