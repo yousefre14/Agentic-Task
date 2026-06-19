@@ -7,7 +7,7 @@ st.set_page_config(
     page_title="Kayfa Portal — كيف",
     page_icon="🎓",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 from Auth import render_login_page, get_user_role, get_authenticator
