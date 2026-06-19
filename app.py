@@ -2,6 +2,9 @@
 app.py — Kayfa Portal Gateway & Welcome Lounge
 """
 import streamlit as st
+from agent import build_agent, run_agent
+from Auth import render_login_page, get_user_role, get_authenticator
+from styles import inject_theme, render_topbar, gold_divider, logo1_b64, logo2_b64
 
 st.set_page_config(
     page_title="Kayfa Portal — كيف",
@@ -10,9 +13,16 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-from Auth import render_login_page, get_user_role, get_authenticator
-from styles import inject_theme, render_topbar, gold_divider, logo1_b64, logo2_b64
+if "agent" not in st.session_state:
+    st.session_state.agent = build_agent()
 
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+    
 # ── theme ─────────────────────────────────────────────────────────────────────
 inject_theme()
 

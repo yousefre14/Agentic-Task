@@ -42,10 +42,11 @@ _JSON_BLOCK_RE = re.compile(
 )
 
 def _clean(text: str) -> str:
-    """Strip all known Groq llama tool-call leak formats from response text."""
+    """Strip all known Groq llama tool-call leak formats safely."""
     if not text:
         return ""
     text = _LEAK_RE.sub("", text)
+    text = _JSON_BLOCK_RE.sub("", text)
     # collapse triple+ newlines left after removal
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
