@@ -21,7 +21,7 @@ def precompute_embeddings():
 
     if not documents:
         total = collection.count_documents({})
-        print(f"\n✅ All {total} documents already have embeddings. Nothing to do.")
+        print(f"\n All {total} documents already have embeddings. Nothing to do.")
         return
 
     print(f"\nFound {len(documents)} documents missing embeddings. Processing...\n")
@@ -34,7 +34,7 @@ def precompute_embeddings():
         src     = doc.get("source_file", "unknown")   # FIX: was 'filename'
 
         if not content.strip():
-            print(f"  ⚠️  Skipped (empty content): {src}")
+            print(f"   Skipped (empty content): {src}")
             failed += 1
             continue
 
@@ -44,10 +44,10 @@ def precompute_embeddings():
                 {"_id": doc["_id"]},
                 {"$set": {"embedding": vector}}
             )
-            print(f"  ✅  {src} | chunk {doc.get('chunk_index', '?')}")
+            print(f"   {src} | chunk {doc.get('chunk_index', '?')}")
             success += 1
         except Exception as e:
-            print(f"  ❌  {src}: {e}")
+            print(f"   {src}: {e}")
             failed += 1
 
     print(f"\n{'='*55}")

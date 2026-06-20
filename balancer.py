@@ -22,7 +22,7 @@ print(f"\n  Total documents : {total}")
 print(f"  Missing vectors : {len(missing_docs)}")
 
 if not missing_docs:
-    print("\n🎉 Every document already has a stored vector. DB is fully optimised.")
+    print("\n Every document already has a stored vector. DB is fully optimised.")
 else:
     print(f"\nBackfilling {len(missing_docs)} missing embeddings...\n")
     success = 0

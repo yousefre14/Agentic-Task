@@ -130,8 +130,8 @@ def capture_and_save_crm_lead(
             "recommended_action":   recommended_action,
         }
         inserted_id = LeadDB.create_ticket(ticket)
-        print(f"[CRM] ✅ Lead saved: {name} | {contact} | ID: {inserted_id}")
+        print(f"[CRM] Lead saved: {name} | {contact} | ID: {inserted_id}")
         return f"SUCCESS: Lead recorded — ID {inserted_id}"
     except Exception as e:
-        print(f"[CRM] ❌ Failed to save lead: {e}")
+        print(f"[CRM] Failed to save lead: {e}")
         return f"FAILURE: {str(e)}"

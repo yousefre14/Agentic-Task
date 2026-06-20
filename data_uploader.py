@@ -37,7 +37,7 @@ client = MongoClient(MONGODB_URI)
 db     = client["kayfa_sales_agent"]
 col    = db["knowledge_base"]
 
-# ── Data path (confirmed from your filesystem) ────────────────────────────────
+# ── Data path ────────────────────────────────
 DATA_DIR = "/media/yousef/DATA/Agentic Task/Ai-Analytics Intern at Kayfa Task3 Data and its Summary/data"
 
 
@@ -131,7 +131,7 @@ def upload_md(filepath: str) -> tuple[int, int, str | None]:
         if not docs:
             return 0, 0, "No chunks produced"
 
-        # 🚀 ADD THIS: Pre-calculate vector embeddings for every chunk!
+        # Pre-calculate vector embeddings for every chunk
         print(f"  🧠 Generating semantic vectors for {filename}...")
         for doc in docs:
             doc["embedding"] = calculate_embedding(doc["content"])
@@ -228,7 +228,7 @@ def main():
     md_files, json_files = discover_files(DATA_DIR)
 
     if not md_files and not json_files:
-        print(f"\n❌  No files found in: {DATA_DIR}")
+        print(f"\n No files found in: {DATA_DIR}")
         client.close()
         return
 
@@ -238,29 +238,29 @@ def main():
     failures   = 0
 
     # ── Markdown (chunked) ────────────────────────────────────────────────
-    print("📄  Markdown files  (chunked by ## heading):")
+    print(" Markdown files  (chunked by ## heading):")
     print("-" * 65)
     for fp in md_files:
         name = os.path.basename(fp)
         n, chars, err = upload_md(fp)
         if err:
-            print(f"  ❌  {name:<48} {err}")
+            print(f"  {name:<48} {err}")
             failures += 1
         else:
             print(f"  ✅  {name:<48} {n:>3} chunks  ({chars:,} chars)")
             total_docs += n
 
     # ── JSON (one object per doc) ─────────────────────────────────────────
-    print("\n📋  JSON files  (one object = one document):")
+    print("\n JSON files  (one object = one document):")
     print("-" * 65)
     for fp in json_files:
         name = os.path.basename(fp)
         n, err = upload_json(fp)
         if err:
-            print(f"  ❌  {name:<48} {err}")
+            print(f"   {name:<48} {err}")
             failures += 1
         else:
-            print(f"  ✅  {name:<48} {n:>3} documents")
+            print(f"  {name:<48} {n:>3} documents")
             total_docs += n
 
     # ── Summary ───────────────────────────────────────────────────────────

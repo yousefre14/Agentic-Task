@@ -77,7 +77,6 @@ class LeadDB:
             tickets.append(doc)
         return tickets
 
-    # 🚀 UPDATED & FIXED METHOD BELOW:
     @staticmethod
     def update_ticket_status(ticket_id: str, status: str, note: str = None, **kwargs) -> bool:
         """
@@ -104,11 +103,11 @@ class LeadDB:
                 update_operations
             )
             
-            print(f"💼 CRM Ticket {ticket_id} status modified successfully to: {status}")
+            print(f" CRM Ticket {ticket_id} status modified successfully to: {status}")
             return result.modified_count > 0
             
         except Exception as e:
-            print(f"❌ Failed to alter CRM document status status: {str(e)}")
+            print(f" Failed to alter CRM document status status: {str(e)}")
             return False
 
 
@@ -130,12 +129,6 @@ class KnowledgeBaseDB:
                                similarity_threshold: float = 0.15) -> str:
         """
         Semantic search returning TOP N relevant chunks (not just 1).
-
-        WHY top_n=4?
-        A price question needs BOTH the diploma overview (what it is) AND the
-        pricing chunk (what it costs) — these live in different source files.
-        Returning only the single best match caused the hallucination bug where
-        the agent found curriculum but never found the price table.
 
         HOW:
           1. Embed the query once.
@@ -189,7 +182,7 @@ class KnowledgeBaseDB:
                 src     = doc.get('source_file', 'KB')
                 section = doc.get('section', '')
                 content = doc.get('content', '')
-                print(f"[RAG] ✅ {src} | {section} | score={score:.4f}")
+                print(f"[RAG] {src} | {section} | score={score:.4f}")
                 context_parts.append(
                     f"### Source: {src} — {section}\n{content}"
                 )

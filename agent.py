@@ -74,15 +74,15 @@ def build_agent():
         ]:
             try:
                 sales_agent.tool(tool_fn)
-                print(f"[agent] ✅ Tool registered: {tool_fn.__name__}")
+                print(f"[agent] Tool registered: {tool_fn.__name__}")
             except Exception as e:
-                print(f"[agent] ⚠️  Tool {tool_fn.__name__} failed: {e}")
+                print(f"[agent]  Tool {tool_fn.__name__} failed: {e}")
 
-        print("[agent] ✅ Agent ready.")
+        print("[agent] Agent ready.")
         return sales_agent
 
     except Exception as e:
-        print(f"[agent] ❌ Build failed: {e}")
+        print(f"[agent] Build failed: {e}")
         return None
 
 
@@ -151,7 +151,7 @@ def run_agent(agent, prompt: str, history: list,
             accumulate_session_usage(st.session_state, turn_record)
             print(f"[TRACKER] Turn Cost: ${turn_record.cost_usd} | Session Cost Accumulation: ${st.session_state.get('usage_total_cost', 0.0)}")
         except Exception as tracker_err:
-            print(f"[agent] ⚠️ Tracker instrumentation warning: {tracker_err}")
+            print(f"[agent] Tracker instrumentation warning: {tracker_err}")
 
         all_msgs    = result.all_messages()
         output_text = _clean(result.output)
@@ -187,11 +187,11 @@ def run_agent(agent, prompt: str, history: list,
                 if syn_text:
                     return syn_text, all_msgs
 
-        print("[agent] ⚠️  All layers empty — using fallback message")
+        print("[agent]  All layers empty — using fallback message")
         return _fallback(prompt), history
 
     except Exception as e:
-        print(f"[agent] ❌ Inference error: {e}")
+        print(f"[agent] Inference error: {e}")
         return _fallback(prompt), history
 
 

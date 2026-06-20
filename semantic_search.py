@@ -6,7 +6,6 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 # Load a lightweight, highly accurate bilingual model (English/Arabic optimized)
-# This downloads once locally to your machine and runs completely free offline
 base_model_cache = None
 
 def get_embedding_model():
