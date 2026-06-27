@@ -110,6 +110,8 @@ _SKIP_PATTERNS = [
     "مرحبا", "أهلاً", "السلام", "هاي", "هلا", "hello", "hi", "hey",
     "اسمي", "رقمي", "ايميلي", "my name is", "my number is", "my email is",
     "شكرا", "وداعاً", "bye", "thanks",
+    # Contact info turns — agent already has what it needs, no retrieval needed
+    "@",          # email being provided
 ]
 
 class QueryRouter:
@@ -119,6 +121,10 @@ class QueryRouter:
         if len(msg) < 12:
             return True
         if any(pat in msg for pat in _SKIP_PATTERNS):
+            return True
+        # Pure phone number — digits, spaces, +, - only
+        import re
+        if re.match(r"^[\d\s\+\-\(\)]{7,20}$", msg.strip()):
             return True
         return False
 
@@ -185,13 +191,13 @@ _VALID_EMAIL_RE = _re.compile(
     r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
 )
 _VALID_PHONE_PATTERNS = [
-    _re.compile(r"^(\+20|0020|0)?1[0125]\d{8}$"),     # Egypt
-    _re.compile(r"^(\+966|00966|0)?5\d{8}$"),          # Saudi
-    _re.compile(r"^(\+971|00971|0)?5[024568]\d{7}$"),  # UAE
-    _re.compile(r"^(\+962|00962|0)?7[789]\d{7}$"),     # Jordan
-    _re.compile(r"^(\+963|00963|0)?9[0-9]\d{7}$"),     # Syria
-    _re.compile(r"^(\+961|00961|0)?[37]\d{7}$"),       # Lebanon
-    _re.compile(r"^(\+965|00965)?[569]\d{7}$"),        # Kuwait
+    _re.compile(r"^(\+20|0020|20|0)?1[0125]\d{8}$"),      # Egypt
+    _re.compile(r"^(\+966|00966|966|0)?5\d{8}$"),          # Saudi
+    _re.compile(r"^(\+971|00971|971|0)?5[024568]\d{7}$"),  # UAE
+    _re.compile(r"^(\+962|00962|962|0)?7[789]\d{7}$"),     # Jordan
+    _re.compile(r"^(\+963|00963|963|0)?9[0-9]\d{7}$"),     # Syria
+    _re.compile(r"^(\+961|00961|961|0)?[37]\d{7}$"),       # Lebanon
+    _re.compile(r"^(\+965|00965|965)?[569]\d{7}$"),        # Kuwait
 ]
 
 def _validate_contact(contact: str) -> tuple[bool, str]:

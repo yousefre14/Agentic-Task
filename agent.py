@@ -58,7 +58,6 @@ _JSON_BLOCK_RE = re.compile(
     r"|\{\s*\"query_text\"\s*:.*?\}",
     flags=re.DOTALL
 )
-
 def _clean(text: str) -> str:
     if not text:
         return ""
@@ -68,6 +67,52 @@ def _clean(text: str) -> str:
     return text.strip()
 
 # BEHAVIOUR TRACE LOGGER
+
+# ── Off-topic guardrail — fires BEFORE the LLM, saves tokens + is reliable ──
+_OFFTOPIC_TRIGGERS_AR = [
+    "نكتة", "نكت", "اضحكني", "قصة", "حكاية", "شعر", "اكتب لي",
+    "ترجمة", "ترجم", "رياضيات", "حل مسألة", "اخبار", "سياسة",
+    "دين", "رأيك في", "فيلم", "مسلسل", "كرة", "طبخ", "وصفة",
+]
+_OFFTOPIC_TRIGGERS_EN = [
+    "joke", "tell me a story", "write a poem", "translate",
+    "solve this", "math", "what is the capital", "news",
+    "politics", "religion", "movie", "recipe", "football",
+    "your opinion on", "who is the president",
+]
+_KAYFA_SIGNALS = [
+    "كورس", "دورة", "دبلوم", "تراك", "مسار", "سعر", "تسجيل",
+    "course", "diploma", "track", "price", "enroll", "kayfa",
+    "data", "ai", "soc", "cybersecurity", "python",
+]
+
+def _is_off_topic(text: str) -> bool:
+    """
+    Returns True if the message is clearly off-topic AND has no Kayfa signals.
+    Pre-LLM check — if True, return canned refusal without touching the model.
+    """
+    lower = text.lower()
+    # Pass through if the message mentions anything Kayfa-related
+    if any(sig in lower for sig in _KAYFA_SIGNALS):
+        return False
+    is_arabic = any("\u0600" <= c <= "\u06FF" for c in text)
+    triggers = _OFFTOPIC_TRIGGERS_AR if is_arabic else _OFFTOPIC_TRIGGERS_EN
+    return any(t in lower for t in triggers)
+
+
+def _offtopic_reply(prompt: str) -> str:
+    is_arabic = any("\u0600" <= c <= "\u06FF" for c in prompt)
+    if is_arabic:
+        return (
+            "أنا مساعد مبيعات Kayfa التعليمية، ومش مصمم أجاوب على أسئلة "
+            "خارج نطاق دوراتنا وبرامجنا. لو عندك سؤال عن كورساتنا أو "
+            "دبلوماتنا أو أسعارنا، أنا هنا أساعدك! 😊"
+        )
+    return (
+        "I'm Kayfa's educational sales assistant and I'm only able to help "
+        "with questions about our courses, tracks, diplomas, and enrollment. "
+        "Is there anything about our programs I can help you with? 😊"
+    )
 
 def _log_trace(
     session_id:    str,
@@ -161,7 +206,7 @@ def _build_lean_history(all_messages: list) -> list:
                         idx = raw_content.find(sentinel)
                         if idx != -1:
                             raw_content = raw_content[idx + len(sentinel):]
-                    for reminder_marker in ["[CRITICAL DIRECTIVE]"]:
+                    for reminder_marker in ["[CRITICAL DIRECTIVE]", "[STRICT GROUNDING RULE"]:
                         ri = raw_content.find(f"\n\n{reminder_marker}")
                         if ri != -1:
                             raw_content = raw_content[:ri]
@@ -188,6 +233,17 @@ def _build_lean_history(all_messages: list) -> list:
 
     return lean
 
+def _is_contact_only(prompt: str) -> bool:
+    """True if the message is just a phone number or email — no retrieval needed."""
+    import re
+    stripped = prompt.strip()
+    # Pure phone number
+    if re.match(r"^[\+\d][\d\s\-\(\)]{6,19}$", stripped):
+        return True
+    # Pure email
+    if re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", stripped):
+        return True
+    return False
 
 # PARALLEL RETRIEVAL
 
@@ -237,9 +293,14 @@ async def _run_retrieval_parallel(query_text: str) -> str:
     if not deduped:
         return ""
 
+    final_chunks = ([pricing] + deduped) if pricing.strip() else deduped
+ 
+    if not final_chunks:
+        return ""
+ 
     return (
         "[PRE-FETCHED KNOWLEDGE BASE CONTEXT]\n"
-        + "\n\n---\n\n".join(deduped)
+        + "\n\n---\n\n".join(final_chunks)
         + "\n[END CONTEXT]\n\n"
         + "[SYSTEM REMINDER: Respond entirely in the language/dialect the user used.]"
     )
@@ -256,6 +317,7 @@ def build_agent():
         sales_agent = Agent(
             "groq:openai/gpt-oss-120b",
             system_prompt=SYSTEM_PROMPT,
+            model_settings={"temperature": 0.3},
         )
         for tool_fn in [
             tools.search_available_courses,
@@ -303,7 +365,13 @@ def run_agent(agent, prompt: str, history: list,
               display_messages: list) -> tuple[str, list]:
     if agent is None:
         return _fallback(prompt), history
-
+    if _is_off_topic(prompt):
+        print(f"[agent] Off-topic blocked: '{prompt[:50]}'")
+        return _offtopic_reply(prompt), history
+    if _is_contact_only(prompt):
+        skip_retrieval = True
+        print(f"[agent] Contact-only turn — retrieval skipped")
+    
     try:
         is_arabic      = any("\u0600" <= c <= "\u06FF" for c in prompt)
         skip_retrieval = QueryRouter.should_skip_retrieval(prompt)
