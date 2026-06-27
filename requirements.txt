@@ -1,6 +1,6 @@
 streamlit
 streamlit-authenticator
-pydantic-ai
+pydantic-ai[groq]
 pymongo
 openai
 pydantic
@@ -8,5 +8,9 @@ python-dotenv
 PyYAML
 bcrypt
 jinja2
-sentence-transformers
-torchvision
+numpy
+groq
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cpu
+torchvision==0.17.2+cpu
+sentence-transformers==2.7.0
