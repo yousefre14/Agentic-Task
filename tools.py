@@ -187,9 +187,8 @@ def lookup_policies_and_sales_pitches(ctx: RunContext, user_query: str) -> str:
 
 # ── TOOL 4 — CRM lead capture ────────────────────────────────────────────────
 
-_VALID_EMAIL_RE = _re.compile(
-    r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
-)
+_VALID_EMAIL_RE = _re.compile(r"^(20)?1[0125]\d{8}$")
+
 _VALID_PHONE_PATTERNS = [
     _re.compile(r"^(\+20|0020|20|0)?1[0125]\d{8}$"),      # Egypt
     _re.compile(r"^(\+966|00966|966|0)?5\d{8}$"),          # Saudi
@@ -206,7 +205,7 @@ def _validate_contact(contact: str) -> tuple[bool, str]:
         if _VALID_EMAIL_RE.match(contact):
             return True, ""
         return False, f"Invalid email format: '{contact}'"
-    digits = _re.sub(r"[\s\-\(\)\+]", "", contact)
+    digits = _re.sub(r"[^\d]", "", contact)
     for pattern in _VALID_PHONE_PATTERNS:
         if pattern.match(digits):
             return True, ""
