@@ -77,99 +77,6 @@ if "session_id" not in st.session_state:
     st.session_state.agent_history = []
 
 
-# CONTACT VALIDATION
-
-_PHONE_TRIGGERS = re.compile(
-    r"(?:رقم|واتساب|whatsapp|phone|number|my number|رقمي|تواصل)",
-    re.IGNORECASE,
-)
-_EMAIL_TRIGGERS = re.compile(
-    r"(?:email|إيميل|ايميل|بريد|mail)",
-    re.IGNORECASE,
-)
-
-# Anything that has digits and could be a phone number attempt
-_PHONE_CANDIDATE = re.compile(r"\+?[\d][\d\s\-\(\)]{6,19}")
-
-# Anything that contains @ (email attempt)
-_EMAIL_CANDIDATE = re.compile(r"[^\s@]+@[^\s@]+")
-
-# Valid patterns
-_VALID_EMAIL = re.compile(
-    r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
-)
-
-# Supported country patterns: Egypt, Saudi, UAE, Jordan, Syria, Lebanon, Kuwait
-_VALID_PHONE_PATTERNS = [
-    (re.compile(r"^(\+20|020|20|0)?1[0125]\d{8}$"),    "مصر — 010/011/012/015 + 8 أرقام"),
-    (re.compile(r"^(\+966|00966|966|0)?5\d{8}$"),        "السعودية — 05X + 8 أرقام"),
-    (re.compile(r"^(\+971|00971|971|0)?5[024568]\d{7}$"),"الإمارات — 05X + 7 أرقام"),
-    (re.compile(r"^(\+962|00962|962|0)?7[789]\d{7}$"),   "الأردن — 077/078/079 + 7 أرقام"),
-    (re.compile(r"^(\+963|00963|963|0)?9[0-9]\d{7}$"),   "سوريا — 09X + 7 أرقام"),
-    (re.compile(r"^(\+961|00961|961|0)?[37]\d{7}$"),     "لبنان — 03/07 + 7 أرقام"),
-    (re.compile(r"^(\+965|00965|965)?[569]\d{7}$"),      "الكويت — 5/6/9 + 7 أرقام"),
-]
-
-def _digits_only(s: str) -> str:
-    """Strip everything except digits."""
-    return re.sub(r"[^\d]", "", s)
-
-
-def _validate_contact_info(text: str) -> list[str]:
-    """
-    Scan message for contact-info attempts and return a list of error strings.
-    Empty list → message is clean, send to agent.
-    Non-empty → block the message and show errors to the user.
-    """
-    errors = []
-
-    # ── Email validation ───────────────────────────────────────────────────
-    email_candidates = _EMAIL_CANDIDATE.findall(text)
-    for raw in email_candidates:
-        raw = raw.strip(".,;:")
-        if not _VALID_EMAIL.match(raw):
-            errors.append(
-                f"📧 **{raw}** لا يبدو عنوان بريد إلكتروني صحيحاً.\n"
-                f"الصيغة الصحيحة: `yourname@example.com`"
-                if any("\u0600" <= c <= "\u06FF" for c in text)
-                else f"📧 **{raw}** doesn't look like a valid email address.\n"
-                     f"Expected format: `yourname@example.com`"
-            )
-
-    # ── Phone validation ───────────────────────────────────────────────────
-    # Only check for phones if there's a trigger word OR a clear phone-like string
-    has_phone_trigger = bool(_PHONE_TRIGGERS.search(text))
-    phone_candidates  = _PHONE_CANDIDATE.findall(text)
-
-    for raw in phone_candidates:
-        digits = _digits_only(raw)
-
-        # Skip short digit runs (prices, years, course IDs)
-        if len(digits) < 8:
-            continue
-
-        # Skip if no trigger word and the number is short (could be a price/year)
-        if not has_phone_trigger and len(digits) < 10:
-            continue
-
-        # Check against all known valid patterns
-        matched = any(pattern.match(digits) for pattern, _ in _VALID_PHONE_PATTERNS)
-        if not matched:
-            is_arabic = any("\u0600" <= c <= "\u06FF" for c in text)
-            country_hints = "\n".join(f"  • {hint}" for _, hint in _VALID_PHONE_PATTERNS)
-            if is_arabic:
-                errors.append(
-                    f"📱 **{raw.strip()}** لا يبدو رقم هاتف صحيحاً.\n\n"
-                    f"أمثلة على الأرقام المقبولة:\n{country_hints}"
-                )
-            else:
-                errors.append(
-                    f"📱 **{raw.strip()}** doesn't look like a valid phone number.\n\n"
-                    f"Accepted formats:\n{country_hints}"
-                )
-
-    return errors
-
 
 # ── page header ───────────────────────────────────────────────────────────────
 render_topbar(
@@ -227,18 +134,7 @@ if prompt := st.chat_input("Ask about diplomas, pricing, or enrollment..."):
         st.warning("Message too long (max 2000 chars).")
         st.stop()
 
-    # ── Contact info validation ────────────────────────────────────────────
-    contact_errors = _validate_contact_info(prompt)
-    if contact_errors:
-        is_ar = any("\u0600" <= c <= "\u06FF" for c in prompt)
-        if is_ar:
-            st.error("⚠️ يرجى تصحيح معلومات التواصل قبل الإرسال:")
-        else:
-            st.error("⚠️ Please fix the contact info before sending:")
-        for err in contact_errors:
-            st.markdown(err)
-        st.stop()
-
+ 
     # ── Everything valid — proceed as before ──────────────────────────────
     is_user_ar = any("\u0600" <= c <= "\u06FF" for c in prompt)
     lang_tag   = 'dir="rtl" lang="ar" class="ticket-arabic"' if is_user_ar else 'style="padding:0.25rem 0;"'
