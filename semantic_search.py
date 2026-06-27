@@ -2,16 +2,25 @@
 semantic_search.py — Vector Similarity Matching Engine (Local Context Realization)
 """
 
+import threading
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
 base_model_cache = None
+_model_lock = threading.Lock()
+
 
 def get_embedding_model():
     global base_model_cache
     if base_model_cache is None:
-        base_model_cache = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+        with _model_lock:
+            if base_model_cache is None:  # double-checked locking
+                print("[semantic_search] Loading sentence-transformer model (once)...")
+                base_model_cache = SentenceTransformer(
+                    'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
+                )
     return base_model_cache
+
 
 def calculate_embedding(text: str) -> list:
     """Converts a text string into a 384-dimensional dense vector."""
@@ -19,15 +28,16 @@ def calculate_embedding(text: str) -> list:
     embedding = model.encode(text, convert_to_numpy=True)
     return embedding.tolist()
 
+
 def compute_cosine_similarity(vec_a: list, vec_b: list) -> float:
     """Calculates how close two meaning vectors are quickly using numpy."""
     a = np.asarray(vec_a, dtype=np.float32)
     b = np.asarray(vec_b, dtype=np.float32)
-    
+
     norm_a = np.linalg.norm(a)
     norm_b = np.linalg.norm(b)
-    
+
     if norm_a == 0.0 or norm_b == 0.0:
         return 0.0
-        
+
     return float(np.dot(a, b) / (norm_a * norm_b))

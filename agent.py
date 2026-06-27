@@ -212,7 +212,7 @@ async def _run_retrieval_parallel(query_text: str) -> str:
         # "enrol in X" has low similarity to a price table — dedicated
         # query guarantees the price is always in context.
         r = KnowledgeBaseDB.query_unstructured_kb(
-            "track price USD cost enrollment fee", top_n=2
+            "Kayfa paid educational tracks price table", top_n=2
         )
         return r or ""
 
