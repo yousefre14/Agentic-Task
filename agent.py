@@ -243,10 +243,8 @@ async def _run_retrieval_parallel(query_text: str) -> str:
         return r or ""
 
     def _diploma_pitch():
-        r = KnowledgeBaseDB.query_unstructured_kb(
-            "diploma bootcamp curriculum overview pitch", top_n=2
-        )
-      return r or ""
+        r = KnowledgeBaseDB.query_unstructured_kb("diploma bootcamp curriculum overview pitch", top_n=2)
+        return r or ""
 
     def _policies():
         r = KnowledgeBaseDB.query_unstructured_kb(query_text, top_n=5)
