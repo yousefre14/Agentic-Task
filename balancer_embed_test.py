@@ -2,9 +2,6 @@
 balancer.py — Check and backfill missing embeddings on demand.
 Run anytime to ensure all KB documents have stored vectors.
 
-FIXES:
-  1. doc.get('filename') → doc.get('source_file')
-  2. Uses KnowledgeBaseDB.get_collection() which now exists
 """
 
 from db import KnowledgeBaseDB
@@ -28,7 +25,7 @@ else:
     success = 0
     for doc in missing_docs:
         content = doc.get("content", "")
-        src     = doc.get("source_file", "unknown")   # FIX: was 'filename'
+        src     = doc.get("source_file", "unknown")  
         if content.strip():
             try:
                 vector = calculate_embedding(content)
@@ -36,10 +33,10 @@ else:
                     {"_id": doc["_id"]},
                     {"$set": {"embedding": vector}}
                 )
-                print(f"  ✅  {src} | chunk {doc.get('chunk_index','?')}")
+                print(f"   {src} | chunk {doc.get('chunk_index','?')}")
                 success += 1
             except Exception as e:
-                print(f"  ❌  {src}: {e}")
+                print(f"  {src}: {e}")
 
     print(f"\n✅ Done. {success}/{len(missing_docs)} embeddings saved.")
 

@@ -5,13 +5,11 @@ semantic_search.py — Vector Similarity Matching Engine (Local Context Realizat
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-# Load a lightweight, highly accurate bilingual model (English/Arabic optimized)
 base_model_cache = None
 
 def get_embedding_model():
     global base_model_cache
     if base_model_cache is None:
-        # 'paraphrase-multilingual-MiniLM-L12-v2' is excellent for cross-lingual Arabic mapping
         base_model_cache = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
     return base_model_cache
 

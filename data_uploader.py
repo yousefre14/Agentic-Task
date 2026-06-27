@@ -1,11 +1,8 @@
 """
 upload_knowledge_base.py
-========================
-Uploads Kayfa knowledge base to MongoDB with RAG-optimised storage.
-
 Storage strategy:
   • .md files  → chunked by ## headings, one chunk = one document
-  • .json files → one array element = one document (unchanged)
+  • .json files → one array element = one document 
 
 Each chunk document shape:
   {
@@ -17,13 +14,7 @@ Each chunk document shape:
     "collection_key":"kayfa_soc_diploma",
     "imported_at":   "2026-06-18T..."
   }
-
-WHY chunking helps RAG:
-  A similarity search on "SOC diploma price" should return the 150-word
-  Pricing section — not the entire 3000-word diploma file. Smaller chunks =
-  higher precision retrieval = less noise fed to the LLM.
 """
-
 import os
 import re
 import json
@@ -32,7 +23,7 @@ from pymongo import MongoClient
 from semantic_search import calculate_embedding
 
 # ── MongoDB ───────────────────────────────────────────────────────────────────
-MONGODB_URI = "mongodb+srv://yousefmegawer_db_user:AO3VqLNqJCNzaWOs@cluster0.nfjjcbd.mongodb.net/?appName=Cluster0"
+MONGODB_URI = ""
 client = MongoClient(MONGODB_URI)
 db     = client["kayfa_sales_agent"]
 col    = db["knowledge_base"]
@@ -41,9 +32,7 @@ col    = db["knowledge_base"]
 DATA_DIR = "/media/yousef/DATA/Agentic Task/Ai-Analytics Intern at Kayfa Task3 Data and its Summary/data"
 
 
-# ════════════════════════════════════════════════════════════════════════════
 # CHUNKING — the core RAG improvement
-# ════════════════════════════════════════════════════════════════════════════
 
 def chunk_markdown(text: str, source_file: str) -> list[dict]:
     """
@@ -62,7 +51,6 @@ def chunk_markdown(text: str, source_file: str) -> list[dict]:
     now        = datetime.now(timezone.utc).isoformat()
 
     # Split on lines that start with ## (but NOT ###)
-    # Pattern: capture the delimiter so we keep the heading in the chunk
     parts = re.split(r'(?=^##(?!#))', text, flags=re.MULTILINE)
 
     raw_chunks = []
@@ -71,7 +59,7 @@ def chunk_markdown(text: str, source_file: str) -> list[dict]:
         if not part:
             continue
 
-        # Extract heading title (first line if it starts with ##)
+        # Extract heading title 
         lines = part.split('\n', 1)
         first_line = lines[0].strip()
 
@@ -90,7 +78,6 @@ def chunk_markdown(text: str, source_file: str) -> list[dict]:
     merged = []
     for chunk in raw_chunks:
         if merged and len(chunk["content"]) < MIN_CHARS:
-            # append to previous chunk's content
             merged[-1]["content"] += "\n\n" + chunk["content"]
             merged[-1]["section"] += " + " + chunk["section"]
         else:
@@ -113,9 +100,7 @@ def chunk_markdown(text: str, source_file: str) -> list[dict]:
     return docs
 
 
-# ════════════════════════════════════════════════════════════════════════════
 # UPLOAD FUNCTIONS
-# ════════════════════════════════════════════════════════════════════════════
 
 def upload_md(filepath: str) -> tuple[int, int, str | None]:
     filename = os.path.basename(filepath)
@@ -132,7 +117,7 @@ def upload_md(filepath: str) -> tuple[int, int, str | None]:
             return 0, 0, "No chunks produced"
 
         # Pre-calculate vector embeddings for every chunk
-        print(f"  🧠 Generating semantic vectors for {filename}...")
+        print(f"  Generating semantic vectors for {filename}...")
         for doc in docs:
             doc["embedding"] = calculate_embedding(doc["content"])
 
@@ -196,9 +181,7 @@ def upload_json(filepath: str) -> tuple[int, str | None]:
         return 0, str(e)
 
 
-# ════════════════════════════════════════════════════════════════════════════
 # FILE DISCOVERY
-# ════════════════════════════════════════════════════════════════════════════
 
 def discover_files(base: str) -> tuple[list[str], list[str]]:
     md_files, json_files = [], []
@@ -212,9 +195,6 @@ def discover_files(base: str) -> tuple[list[str], list[str]]:
     return md_files, json_files
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# MAIN
-# ════════════════════════════════════════════════════════════════════════════
 
 def main():
     print("=" * 65)

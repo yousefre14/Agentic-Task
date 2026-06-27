@@ -1,10 +1,5 @@
 """
 populate_embeddings.py — Pre-compute and store embeddings for all KB chunks.
-Run once after uploading data: python populate_embeddings.py
-
-FIXES:
-  1. doc.get('filename') → doc.get('source_file')  (actual MongoDB field name)
-  2. Used KnowledgeBaseDB.get_collection() which now exists in db.py
 """
 
 from db import KnowledgeBaseDB
@@ -31,7 +26,7 @@ def precompute_embeddings():
 
     for doc in documents:
         content = doc.get("content", "")
-        src     = doc.get("source_file", "unknown")   # FIX: was 'filename'
+        src     = doc.get("source_file", "unknown")
 
         if not content.strip():
             print(f"   Skipped (empty content): {src}")

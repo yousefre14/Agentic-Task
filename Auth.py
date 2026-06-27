@@ -1,5 +1,5 @@
 """
-Auth.py — Clean, premium login experience with fixed hierarchy.
+Auth.py 
 """
 import streamlit as st
 from styles import inject_theme, logo1_b64, logo2_b64
@@ -18,7 +18,7 @@ def render_login_page():
 
     logo_src  = logo1_b64 or logo2_b64
     logo_html = (
-        f'<img src="{logo_src}" style="height:48px; object-fit:contain; '
+        f'<img src="{logo_src}" style="height:80px; object-fit:contain; '
         f'background:transparent; display:block; margin:0 auto 1rem;" alt="Kayfa">'
         if logo_src else
         '<div style="font-size:2.2rem; font-weight:800; color:#F5A623; margin-bottom:1rem; text-align:center;">كيف</div>'
@@ -46,7 +46,7 @@ def render_login_page():
                 
                 st.markdown('<div style="margin-top: 1rem;"></div>', unsafe_allow_html=True)
                 submit = st.form_submit_button(
-                    "Sign in →", use_container_width=True, type="primary"
+                    "Sign in →", width="stretch", type="primary"
                 )
 
             if submit:

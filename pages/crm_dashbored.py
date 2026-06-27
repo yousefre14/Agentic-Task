@@ -93,9 +93,11 @@ with st.sidebar:
     st.markdown(f"👤 Operational View: **{st.session_state.get('name','')}**")
     st.caption("Access Clear: `SALES CONTROL`")
     st.divider()
-    if st.button("💬 Launch Chat Agent", use_container_width=True, type="primary"):
+    if st.button("💬 Launch Chat Agent", width="stretch", type="primary"):
         st.switch_page("pages/chat_agent.py")
-    if st.button("🔄 Sync Live Pipeline", use_container_width=True):
+    if st.button("Admin Trace", width="stretch"):
+        st.switch_page("pages/behavior_trace.py")
+    if st.button("🔄 Sync Live Pipeline", width="stretch"):
         st.rerun()
 
 # ── load data ─────────────────────────────────────────────────────────────────
@@ -130,11 +132,9 @@ if not all_tickets:
     st.stop()
 
 # ── tabs ──────────────────────────────────────────────────────────────────────
-tab1, tab2 = st.tabs(["🔥 Active Leads Pipeline", "📈 Funnel Distribution Profile"])
+tab1, = st.tabs(["🔥 Active Leads Pipeline"],)
 
-# ════════════════════════════════════════════════════════════════════════════
 # TAB 1 — LEADS PIPELINE WORKSPACE
-# ════════════════════════════════════════════════════════════════════════════
 with tab1:
     # ── filters ───────────────────────────────────────────────────────────
     f1, f2, f3 = st.columns([2, 2, 2])
@@ -199,7 +199,7 @@ with tab1:
                 "Program Interest": prods or "N/A",
             })
 
-        st.dataframe(pd.DataFrame(df_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(df_rows), width="stretch", hide_index=True)
 
     with right:
         st.markdown("### Profile Inspector")
@@ -275,7 +275,7 @@ with tab1:
             height=90,
             key=f"note_{lead['_id']}"
         )
-        if st.button("Commit Phase Update Changes ✅", use_container_width=True, key=f"commit_{lead['_id']}", type="primary"):
+        if st.button("Commit Phase Update Changes ✅", width="stretch", key=f"commit_{lead['_id']}", type="primary"):
             try:
                 LeadDB.update_ticket_status(
                     ticket_id=str(lead["_id"]),
@@ -286,51 +286,3 @@ with tab1:
                 st.rerun()
             except Exception as e:
                 st.error(f"Pipeline write sync anomaly: {e}")
-
-# ════════════════════════════════════════════════════════════════════════════
-# TAB 2 — METRIC AND CONVERSION FUNNEL ANALYTICS
-# ════════════════════════════════════════════════════════════════════════════
-with tab2:
-    st.markdown("### Structural Metrics & Stream Funnels")
-
-    a1, a2 = st.columns(2, gap="large")
-
-    with a1:
-        st.markdown("📊 **Lead Volume by Temperature Matrix**")
-        temp_counts = {"hot": 0, "warm": 0, "cold": 0}
-        for t in all_tickets:
-            k = t.get("lead_temperature","warm").lower()
-            if k in temp_counts:
-                temp_counts[k] += 1
-        st.bar_chart(pd.DataFrame.from_dict(temp_counts, orient="index", columns=["leads"]))
-
-    with a2:
-        st.markdown("📈 **Conversion Phases State Metrics**")
-        status_counts = {"new": 0, "contacted": 0, "converted": 0, "lost": 0}
-        for t in all_tickets:
-            k = t.get("status","new").lower()
-            if k in status_counts:
-                status_counts[k] += 1
-        st.bar_chart(pd.DataFrame.from_dict(status_counts, orient="index", columns=["leads"]))
-
-    st.divider()
-    st.markdown("### Top Educational tracks of Interest")
-    prog_counts: dict = {}
-    for t in all_tickets:
-        prods = t.get("products_interested",[])
-        if isinstance(prods, str):
-            prods = [prods]
-        for p in prods:
-            p = p.strip()
-            if p:
-                prog_counts[p] = prog_counts.get(p, 0) + 1
-
-    if prog_counts:
-        df_prog = (
-            pd.DataFrame.from_dict(prog_counts, orient="index", columns=["leads"])
-            .sort_values("leads", ascending=False)
-            .head(8)
-        )
-        st.bar_chart(df_prog)
-    else:
-        st.caption("No product distribution metrics extracted yet.")

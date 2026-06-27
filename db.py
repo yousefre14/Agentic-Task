@@ -1,8 +1,7 @@
 """
 db.py — All database operations: Conversations, CRM Tickets, Knowledge Base RAG.
 
-FIXES:
-  1. query_unstructured_kb now returns TOP N chunks (not top 1) — critical for
+  1. query_unstructured_kb returns TOP N chunks (not top 1) — critical for
      price questions that need both the diploma file AND the pricing file.
   2. 'filename' → 'source_file' everywhere (matches actual MongoDB field name).
   3. Removed full-collection RAM load on every query — uses stored embeddings only,
@@ -18,6 +17,7 @@ from bson import ObjectId
 from dotenv import load_dotenv
 from semantic_search import calculate_embedding, compute_cosine_similarity
 
+
 load_dotenv()
 
 client = MongoClient(os.environ['MONGODB_URI'])
@@ -27,10 +27,6 @@ conversations_col = db['conversations']
 tickets_col       = db['crm_tickets']
 kb_col            = db['knowledge_base']
 
-
-# ════════════════════════════════════════════════════════════════════════════
-# CONVERSATIONS
-# ════════════════════════════════════════════════════════════════════════════
 
 class ConversationDB:
 
@@ -53,10 +49,7 @@ class ConversationDB:
         ).sort('timestamp', ASCENDING)
         return [{'role': d['role'], 'content': d['content']} for d in cursor]
 
-
-# ════════════════════════════════════════════════════════════════════════════
 # CRM TICKETS
-# ════════════════════════════════════════════════════════════════════════════
 
 class LeadDB:
     @staticmethod
@@ -109,11 +102,8 @@ class LeadDB:
         except Exception as e:
             print(f" Failed to alter CRM document status status: {str(e)}")
             return False
+LeadDB.db = db  
 
-
-# ════════════════════════════════════════════════════════════════════════════
-# KNOWLEDGE BASE
-# ════════════════════════════════════════════════════════════════════════════
 
 class KnowledgeBaseDB:
 
@@ -128,14 +118,12 @@ class KnowledgeBaseDB:
     def query_unstructured_kb(cls, query_text: str, top_n: int = 4,
                                similarity_threshold: float = 0.15) -> str:
         """
-        Semantic search returning TOP N relevant chunks (not just 1).
+        Semantic search returning TOP N relevant chunks.
 
         HOW:
           1. Embed the query once.
           2. Score every stored embedding with cosine similarity.
           3. Return the top_n chunks above threshold, concatenated.
-          4. For docs missing embeddings (shouldn't happen after balancer runs)
-             compute on-the-fly and save so it only happens once.
         """
         try:
             query_vector = calculate_embedding(query_text)
@@ -223,3 +211,9 @@ class KnowledgeBaseDB:
         """
         query = structural_name or query_text or "learning path diploma"
         return cls.query_unstructured_kb(query)
+
+db["usage_turns"].create_index([("timestamp", -1)])
+db["usage_turns"].create_index([("session_id", 1)])
+db["usage_sessions"].create_index([("last_seen", -1), ("total_cost_usd", -1)])
+db["behaviour_traces"].create_index([("timestamp", -1)])
+db["behaviour_traces"].create_index([("user_id", 1), ("timestamp", -1)])

@@ -1,4 +1,5 @@
- 
+"""saving CRM tickets in mongo and validate bad data before storing"""
+
 from datetime import datetime, timezone
 from typing import List, Literal, Optional
  

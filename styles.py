@@ -1,6 +1,6 @@
 """
-styles.py — Kayfa AI Sales Agent · Global Design System
-=========================================================
+styles.py — Kayfa AI Sales Agent
+
 Dark glassmorphism theme · Midnight blue + Kayfa gold
 Logo top-right on every page · Full RTL Arabic support
 """
@@ -206,9 +206,7 @@ section[data-testid="stSidebar"] {
 </style>
 """
 
-# ════════════════════════════════════════════════════════════════════════════
 # PUBLIC API — call these from every page
-# ════════════════════════════════════════════════════════════════════════════
 
 def inject_theme():
     """Inject global CSS. Call at the very top of every page."""
@@ -222,9 +220,9 @@ def render_topbar(title: str, subtitle: str = ""):
     """
     logo_html = ""
     if logo1_b64:
-        logo_html = f'<img src="{logo1_b64}" style="height:38px;object-fit:contain;" alt="Kayfa logo">'
+        logo_html = f'<img src="{logo1_b64}" style="height:100px;object-fit:contain;" alt="Kayfa logo">'
     elif logo2_b64:
-        logo_html = f'<img src="{logo2_b64}" style="height:38px;object-fit:contain;" alt="Kayfa logo">'
+        logo_html = f'<img src="{logo2_b64}" style="height:100px;object-fit:contain;" alt="Kayfa logo">'
     else:
         logo_html = '<span style="color:#F5A623;font-weight:700;font-size:1.2rem">كيف · Kayfa</span>'
 
