@@ -101,7 +101,7 @@ _VALID_EMAIL = re.compile(
 
 # Supported country patterns: Egypt, Saudi, UAE, Jordan, Syria, Lebanon, Kuwait
 _VALID_PHONE_PATTERNS = [
-    (re.compile(r"^(\+20|0020|20|0)?1[0125]\d{8}$"),    "مصر — 010/011/012/015 + 8 أرقام"),
+    (re.compile(r"^(\+20|020|20|0)?1[0125]\d{8}$"),    "مصر — 010/011/012/015 + 8 أرقام"),
     (re.compile(r"^(\+966|00966|966|0)?5\d{8}$"),        "السعودية — 05X + 8 أرقام"),
     (re.compile(r"^(\+971|00971|971|0)?5[024568]\d{7}$"),"الإمارات — 05X + 7 أرقام"),
     (re.compile(r"^(\+962|00962|962|0)?7[789]\d{7}$"),   "الأردن — 077/078/079 + 7 أرقام"),
