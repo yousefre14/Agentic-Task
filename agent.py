@@ -1,22 +1,5 @@
 """
 agent.py — Pydantic AI Agent Orchestration Hub.
-
-  PATCH-1  Lean history  — _build_lean_history() strips ToolReturn parts,
-           pre-fetched context blobs, and ToolCall JSON from message_history
-           before each LLM call. Prevents KB content from compounding across
-           turns. Estimated saving: 60-80% of history tokens after turn 2.
-
-  PATCH-2  History window — lean history is capped at MAX_HISTORY_TURNS (5)
-           user+assistant pairs. Older turns are dropped entirely.
-           Prevents unbounded growth in long sessions.
-
-  PATCH-3  Conditional language reminder — only injected when the query is
-           non-trivial (router didn't skip AND message length > 20 chars).
-           Saves ~80 tokens on every "hi", "thanks", CRM-only turn.
-
-  PATCH-4  QueryRouter pattern fix — "hi " → "hi" (strip trailing spaces
-           from all patterns so bare words match correctly).
-           Prevents retrieval from firing on greetings that lack a trailing space.
 """
 
 import asyncio
@@ -259,6 +242,12 @@ async def _run_retrieval_parallel(query_text: str) -> str:
         r = KnowledgeBaseDB.search_roadmaps(structural_name=query_text)
         return r or ""
 
+    def _diploma_pitch():
+        r = KnowledgeBaseDB.query_unstructured_kb(
+            "diploma bootcamp curriculum overview pitch", top_n=2
+        )
+      return r or ""
+
     def _policies():
         r = KnowledgeBaseDB.query_unstructured_kb(query_text, top_n=5)
         return r or ""
@@ -272,12 +261,13 @@ async def _run_retrieval_parallel(query_text: str) -> str:
         )
         return r or ""
 
-    courses, roadmap, policies, pricing = await asyncio.gather(
-        loop.run_in_executor(None, _courses),
-        loop.run_in_executor(None, _roadmap),
-        loop.run_in_executor(None, _policies),
-        loop.run_in_executor(None, _pricing),
-    )
+    courses, roadmap, policies, pricing, diploma_pitch = await asyncio.gather(
+    loop.run_in_executor(None, _courses),
+    loop.run_in_executor(None, _roadmap),
+    loop.run_in_executor(None, _policies),
+    loop.run_in_executor(None, _pricing),
+    loop.run_in_executor(None, _diploma_pitch),
+)
 
     # Merge pricing into policies so dedup handles overlap
     combined_policies = "\n\n---\n\n".join(
