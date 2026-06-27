@@ -11,6 +11,6 @@ jinja2
 numpy
 groq
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.2.2+cpu
-torchvision==0.17.2+cpu
-sentence-transformers==2.7.0
+torch==2.12.1+cpu
+torchvision==0.27.1+cpu
+sentence-transformers
