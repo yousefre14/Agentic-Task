@@ -6,6 +6,14 @@
  
 A Streamlit portal backed by MongoDB Atlas, local multilingual embeddings, and a [Pydantic AI](https://ai.pydantic.dev/) agent served through Groq's `openai/gpt-oss-120b`. The agent answers product, pricing, and policy questions in real time and silently captures qualified leads into a CRM 
 ---
+## Demo 
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/f9c5d6f5-534a-4e1b-bb7a-7c1a6281e8fb" 
+         width="800" 
+         controls>
+  </video>
+</p>
+
  
 ### Contents
 [What it does](#what-it-does) · [Impact](#impact) · [Architecture](#architecture) · [Project structure](#project-structure) · [Tech stack](#tech-stack) · [Key design decisions](#key-design-decisions) · [Setup](#setup)
