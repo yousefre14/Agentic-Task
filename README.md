@@ -1,6 +1,6 @@
-# 🤖 Kayfa AI Sales Agent
+# Kayfa AI Sales Agent
 
-An intelligent, Arabic-first sales agent built with **Pydantic AI**, **MongoDB Atlas**, and **Groq LLM** — deployed as a full-stack Streamlit application. The agent answers product questions, handles pricing and policy queries, and silently captures qualified leads into a CRM dashboard, all in real time.
+Arabic-first sales-assistant and CRM capture system for Kayfa's education catalog. The application is a Streamlit portal backed by MongoDB Atlas, local multilingual embeddings, and a Pydantic AI agent served through Groq's `openai/gpt-oss-120b` model. The agent answers product questions, handles pricing and policy queries, and silently captures qualified leads into a CRM dashboard, all in real time.
 
 Built as Week 3 of the **Kayfa Agentic AI Internship Program**.
 
