@@ -8,7 +8,7 @@ A Streamlit portal backed by MongoDB Atlas, local multilingual embeddings, and a
 ---
 ## Demo 
 <p align="center">
-  <video src="https://github.com/user-attachments/assets/f9c5d6f5-534a-4e1b-bb7a-7c1a6281e8fb" 
+  <video src="[https://github.com/user-attachments/assets/b071b6b3-85b9-432a-90db-ed308c8e164e" 
          width="800" 
          controls>
   </video>
