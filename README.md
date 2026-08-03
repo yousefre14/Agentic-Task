@@ -156,7 +156,7 @@ Enrollment-intent phrasing ("how do I sign up") doesn't always land close to a p
 ---
  
 
-## ⚙️ Setup
+## setup
 
 ### 1. Clone the repo
 
