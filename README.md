@@ -8,7 +8,7 @@ A Streamlit portal backed by MongoDB Atlas, local multilingual embeddings, and a
 ---
  
 ### Contents
-[What it does](#what-it-does) · [Impact](#impact) · [Architecture](#architecture) · [Project structure](#project-structure) · [Tech stack](#tech-stack) · [Key design decisions](#key-design-decisions) · [Setup](#setup) · [Limitations](#known-limitations--next-steps)
+[What it does](#what-it-does) · [Impact](#impact) · [Architecture](#architecture) · [Project structure](#project-structure) · [Tech stack](#tech-stack) · [Key design decisions](#key-design-decisions) · [Setup](#setup)
  
 ## What it does
  
