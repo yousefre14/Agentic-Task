@@ -22,7 +22,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t yousefreda/kayfa-chatbot:latest .
+          docker build -f Docker/Dockerfile -t yousefreda/kayfa-chatbot:latest .
 
       - name: Push Docker image
         run: |
