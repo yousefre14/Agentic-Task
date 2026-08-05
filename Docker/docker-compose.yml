@@ -1,0 +1,8 @@
+services:
+  kayfa-chatbot:
+    image: yousefreda/kayfa-chatbot:latest
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    restart: unless-stopped
